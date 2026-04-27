@@ -4,6 +4,7 @@ This repository includes the simulated data for Assignment #2. Fork this reposit
 
 The csv file for `cohort` in the `raw-data` folder includes 5,000 observations with variables `smoke`, `female`, `age`, `cardiac`, and `cost`.
 
+```{r}
 library(readr)
 library(table1) # package for generating tables
 library(tidyverse)
@@ -31,10 +32,12 @@ cohort <- cohort %>%
   )
 
 ```
+## Table
 ```{r}
 ## create table of describing data (stratified by chosen outcome variable "cardiac")
 table1(~age+ factor(female)+ factor(smoke)+ cost| cardiac, data=cohort)
 ```
+## Regression analysis
 ```{r}
 ## Logistic regression to look at odds of cardiac outcome in males vs females adjusted for age, smoking status and money spent on cigarettes as proxy of amount smoked
 
@@ -71,6 +74,7 @@ m3 <- glm(cardiac~female+ smoke +age, data=cohort, family="binomial")
 summary(m3)
 round(exp(cbind(OR = coef(m3), confint(m3))),2)
 ```
+## Figure
 ```{r}
 ## Plot the predicted probabilities of a cardiac outcome based on age, sex, and smoking status
 
@@ -83,3 +87,6 @@ plot_model(m3,
 
 ## Summary of findings 
 This analysis explored demographic and behavioral risk factors for experiencing a cardiac outcome in a cohort of 5000 individuals. Individuals who experienced cardiac outcomes (N=275) were more likely to be male (88%) than female (12%) and have a history of smoking than individuals without cardiac outcomes (48.4% vs.10.9% smokers, respectively). Individuals with cardiac outcomes were also older than individuals who did not experience cardiac outcomes (mean (SD) 44.9 (15.7) vs. 46.4 (16.2)). In logistic regression analyses, older age, male sex and history of smoking emerged as a significant predictors of cardiac outcomes in both unadjusted and adjusted analyses in indicating independent contributions to cardiac risk.
+
+## AI Statement
+I did not use generative AI to complete this assignment.
