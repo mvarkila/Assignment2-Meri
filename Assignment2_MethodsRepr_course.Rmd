@@ -1,0 +1,111 @@
+---
+title: "Assignment 2"
+output: html_document
+date: "2026-04-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+```{r cars}
+library(readr)
+library(table1) # package for generating tables
+library(tidyverse)
+library(ggplot2)
+library(sjPlot) #package for plotting probabilities of outcome based on LR
+
+#load data
+cohort <- read_csv("/Users/meri/Documents/Postdoc/T32/HPH203/cohort.csv")
+#inspect data
+head(cohort)
+
+#specify levels and labels for factor variables
+cohort <- cohort %>%
+  mutate(
+    female = factor(female, 
+                    levels = c(0,1), 
+                    labels = c("Male", "Female")),
+    smoke = factor(smoke, 
+                    levels = c(0,1), 
+                    labels = c("No smoking", "Smoking")),
+    cardiac = factor(cardiac, 
+                    levels = c(0,1), 
+                    labels = c("No cardiac outcome", "Cardiac outcome")),
+    
+  )
+
+```
+```{r}
+## create table of describing data (stratified by chosen outcome variable "cardiac")
+table1(~age+ factor(female)+ factor(smoke)+ cost| cardiac, data=cohort)
+```
+
+
+
+
+```{r}
+## Logistic regression to look at odds of cardiac outcome in males vs females adjusted for age, smoking status and money spent on cigarettes as proxy of amount smoked
+
+## Step 1: unadjusted LR for each variable
+m_sex <- glm(cardiac~female, data=cohort, family="binomial")
+summary(m_sex)
+round(exp(cbind(OR = coef(m_sex), confint(m_sex))),2)
+
+m_age <- glm(cardiac~age, data=cohort, family="binomial")
+summary(m_age)
+round(exp(cbind(OR = coef(m_age), confint(m_age))),2)
+
+m_smoke <- glm(cardiac~smoke, data=cohort, family="binomial")
+summary(m_smoke)
+round(exp(cbind(OR = coef(m_smoke), confint(m_smoke))),2)
+
+m_cost <- glm(cardiac~cost, data=cohort, family="binomial")
+summary(m_cost)
+round(exp(cbind(OR = coef(m_cost), confint(m_cost))),2)
+```
+
+
+```{r}
+## Step 2: adjusted LR with all variables in the model
+m2 <- glm(cardiac~female+ smoke +age +cost, data=cohort, family="binomial")
+
+summary(m2)
+round(exp(cbind(OR = coef(m2), confint(m2))),2)
+# The coefficients and odds ratios are unexpected considering the positive association seen in unadjusted models
+# Cost could be a consequence of cardiac outcome rather than a predictor, which would distort the analysis
+```
+
+
+```{r}
+## Stpe 3: final full LR model adjusted for sex, smoking and age, but leaving out cost
+m3 <- glm(cardiac~female+ smoke +age, data=cohort, family="binomial")
+
+summary(m3)
+round(exp(cbind(OR = coef(m3), confint(m3))),2)
+```
+
+```{r}
+## Plot the predicted probabilities of a cardiac outcome based on age, sex, and smoking status
+
+plot_model(m3,
+  type = "pred",
+  terms = c("age", "smoke", "female")
+) +
+  labs(y = "Prob(cardiac)") 
+```
+
+
+
+
+## Summary of findings 
+This analysis explored demographic and behavioral risk factors for experiencing a cardiac outcome in a cohort of 5000 individuals. Individuals who experienced cardiac outcomes (N=275) were more likely to be male (88%) than female (12%) and have a history of smoking than individuals without cardiac outcomes (48.4% vs.10.9% smokers, respectively). Individuals with cardiac outcomes were also older than individuals who did not experience cardiac outcomes (mean (SD) 44.9 (15.7) vs. 46.4 (16.2)). In logistic regression analyses, older age, male sex and history of smoking emerged as a significant predictors of cardiac outcomes in both unadjusted and adjusted analyses in indicating independent contributions to cardiac risk.
+```{r}
+
+```
+
+
+
